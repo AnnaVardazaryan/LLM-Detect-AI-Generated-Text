@@ -1,0 +1,5 @@
+dataset:
+  train_path: data/train_essays.csv  # after merging and cleaning
+  test_path: data/test_essays.csv
+  text_column: text
+  label_column: generated

@@ -1,0 +1,9 @@
+defaults:
+  - _self_
+  - dataset
+  - model: logistic
+  - paths
+
+run:
+  seed: 42
+  folds: 5

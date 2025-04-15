@@ -1,0 +1,5 @@
+name: logistic_regression
+type: sklearn
+classifier: logistic
+max_features: 10000
+vectorizer: tfidf

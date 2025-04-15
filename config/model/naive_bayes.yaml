@@ -1,0 +1,5 @@
+name: naive_bayes
+type: sklearn
+classifier: naive_bayes
+max_features: 10000
+vectorizer: tfidf

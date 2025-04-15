@@ -1,0 +1,14 @@
+# Core
+pandas
+numpy
+scikit-learn
+omegaconf
+hydra-core
+
+# Text processing
+nltk
+
+# Optional visualization / dev
+tqdm
+matplotlib
+seaborn
