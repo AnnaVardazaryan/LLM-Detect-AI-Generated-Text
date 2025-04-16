@@ -1,9 +1,11 @@
 defaults:
   - _self_
   - dataset
-  - model: logistic
-  - paths
+  - model: logreg
+  - preprocess/vectorizer: tfidf
+  - preprocess/tokenizer: none
 
 run:
   seed: 42
   folds: 5
+  use_stylometry: true
