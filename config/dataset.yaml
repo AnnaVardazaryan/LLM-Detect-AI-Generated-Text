@@ -1,5 +1,5 @@
 dataset:
-  train_path: data/train_essays.csv  # after merging and cleaning
+  train_path: data/train_essays.csv
   test_path: data/test_essays.csv
-  text_column: text
+  text_columns:  "text" #["text", "source_text"]  # or however many you want
   label_column: generated

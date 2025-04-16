@@ -3,3 +3,5 @@ type: sklearn
 classifier: naive_bayes
 max_features: 10000
 vectorizer: tfidf
+alpha: 1.0
+fit_prior: true
