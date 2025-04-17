@@ -1,2 +1,4 @@
 paths:
   output_dir: outputs
+  train_data: data/train_dataset.csv
+  test_data: data/test_dataset.csv

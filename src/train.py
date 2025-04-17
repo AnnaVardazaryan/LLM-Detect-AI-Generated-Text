@@ -1,13 +1,16 @@
-from src.utils.preprocess import load_data
 from src.models.logistic import train_logistic
 from src.models.naive_bayes import train_naive_bayes
 
 def train_model(cfg):
-    df = load_data(cfg.dataset.train_path)
+    import pandas as pd
 
-    if cfg.model.classifier == "logistic":
+    df = pd.read_csv(cfg.paths.train_data)
+
+    model_type = cfg.model.classifier
+
+    if model_type == "logistic":
         train_logistic(cfg, df)
-    elif cfg.model.classifier == "naive_bayes":
+    elif model_type == "naive_bayes":
         train_naive_bayes(cfg, df)
     else:
-        raise ValueError("Unsupported model")
+        raise ValueError(f"Unknown model: {model_type}")
