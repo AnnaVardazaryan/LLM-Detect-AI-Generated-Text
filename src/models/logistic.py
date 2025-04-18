@@ -5,7 +5,7 @@ import yaml
 import pandas as pd
 from joblib import dump
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import f1_score
+from sklearn.metrics import roc_auc_score, f1_score
 from sklearn.model_selection import StratifiedKFold
 
 from src.utils.vectorizer import get_vectorizer
@@ -24,8 +24,8 @@ def train_logistic(cfg, df):
         max_iter = trial.suggest_int("max_iter", 100, 1000, step=100)
         vectorizer = trial.suggest_categorical("vectorizer", ["tfidf", "count"])
 
-        f1_scores = []
-        for train_idx, val_idx in skf.split(X, y):
+        auc_scores = []
+        for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
             X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
             y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
 
@@ -35,12 +35,18 @@ def train_logistic(cfg, df):
 
             model = LogisticRegression(C=C, penalty=penalty, solver=solver, max_iter=max_iter)
             model.fit(X_train_vec, y_train)
-            preds = model.predict(X_val_vec)
 
-            f1 = f1_score(y_val, preds)
-            f1_scores.append(f1)
+            y_proba = model.predict_proba(X_val_vec)[:, 1]
+            auc = roc_auc_score(y_val, y_proba)
 
-        return np.mean(f1_scores)
+            # Optional: print both AUC and F1
+            y_pred = model.predict(X_val_vec)
+            f1 = f1_score(y_val, y_pred)
+            print(f"Fold {fold+1} AUC: {auc:.4f} | F1: {f1:.4f}")
+
+            auc_scores.append(auc)
+
+        return np.mean(auc_scores)
 
     # Run Optuna tuning
     study = optuna.create_study(direction="maximize")
@@ -49,7 +55,7 @@ def train_logistic(cfg, df):
     best_params = study.best_params
     print("\n✅ Best hyperparameters:")
     print(best_params)
-    print(f"🎯 Best CV F1 Score: {study.best_value:.4f}")
+    print(f"🎯 Best CV AUC: {study.best_value:.4f}")
 
     # Save best hyperparameters to config/model/logistic.yaml
     model_yaml_path = Path("config/model/logistic.yaml")
@@ -63,13 +69,13 @@ def train_logistic(cfg, df):
     with model_yaml_path.open("w") as f:
         yaml.dump(model_config, f)
 
-    # Save best CV F1 score to model_comparison.csv
+    # Save best CV AUC score to model_comparison.csv
     comparison_path = Path(cfg.paths.output_dir) / "model_comparison.csv"
     cv_row = pd.DataFrame([{
         "model": "logistic",
         "accuracy": None,
         "f1_score": None,
-        "cv_f1": study.best_value
+        "cv_auc": study.best_value
     }])
     if comparison_path.exists():
         existing = pd.read_csv(comparison_path)
@@ -78,8 +84,9 @@ def train_logistic(cfg, df):
     else:
         updated = cv_row
     updated.to_csv(comparison_path, index=False)
-    print(f"📄 CV score logged to {comparison_path}")
+    print(f"📄 CV AUC score logged to {comparison_path}")
 
+    # Train final model on full data with best parameters
     vec = get_vectorizer(best_params['vectorizer'], best_params['max_features'])
     X_vec = vec.fit_transform(X)
     model = LogisticRegression(C=best_params['C'], penalty=best_params['penalty'],
@@ -88,4 +95,4 @@ def train_logistic(cfg, df):
 
     dump(vec, f"{cfg.paths.output_dir}/logistic_vectorizer.joblib")
     dump(model, f"{cfg.paths.output_dir}/logistic_model.joblib")
-    print("✅ Model and vectorizer saved.")
+    print("✅ Final model and vectorizer saved.")
