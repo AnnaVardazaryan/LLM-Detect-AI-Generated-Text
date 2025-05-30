@@ -1,3 +1,5 @@
 dataset:
-  text_columns: text
+  text_columns: ['text', 'avg_word_len', 'avg_sentence_len', 'num_sentences',
+       'num_words', 'num_chars', 'lexical_diversity', 'num_exclamations',
+       'num_questions', 'num_commas', 'num_semis', 'num_pronouns']
   label_column: generated

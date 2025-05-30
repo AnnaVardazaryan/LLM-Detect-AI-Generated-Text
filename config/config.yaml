@@ -9,3 +9,7 @@ run:
 
 model:
   classifier: logistic
+
+hydra:
+  run:
+    dir: .
